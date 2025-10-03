@@ -1,6 +1,7 @@
 package cn.popcraft.invitesystem;
 
 import cn.popcraft.invitesystem.command.InviteCommand;
+import cn.popcraft.invitesystem.command.InviteTabCompleter;
 import cn.popcraft.invitesystem.database.DatabaseManager;
 import cn.popcraft.invitesystem.listener.PlayerJoinListener;
 import cn.popcraft.invitesystem.manager.AntiCheatManager;
@@ -44,16 +45,16 @@ public class InviteSystem extends JavaPlugin {
         claimManager = new ClaimManager(this);
         infoManager = new InfoManager(this);
         antiCheatManager = new AntiCheatManager(this);
-
+        
         // 注册命令
         registerCommands();
-
+        
         // 注册事件监听器
         registerListeners();
-
+        
         // 启动定时清理任务
         startCleanupTask();
-
+        
         getLogger().info("InviteSystem插件已启用!");
     }
 
@@ -63,12 +64,12 @@ public class InviteSystem extends JavaPlugin {
         if (databaseManager != null) {
             databaseManager.close();
         }
-
+        
         // 取消定时任务
         if (cleanupTask != null) {
             cleanupTask.cancel();
         }
-
+        
         getLogger().info("InviteSystem插件已禁用!");
     }
 
@@ -102,6 +103,7 @@ public class InviteSystem extends JavaPlugin {
     
     private void registerCommands() {
         getCommand("invite").setExecutor(new InviteCommand(this));
+        getCommand("invite").setTabCompleter(new InviteTabCompleter(this));
     }
     
     private void registerListeners() {

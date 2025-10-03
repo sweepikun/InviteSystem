@@ -2,18 +2,30 @@ name: InviteSystem
 version: 1.0
 main: cn.popcraft.invitesystem.InviteSystem
 api-version: 1.16
-depend: [Vault]
-softdepend: [PlayerPoints, ItemsAdder]
 author: PopCraft
 description: 邀请系统插件
+website: https://popcraft.cn
+
+depend: [Vault]
+
+softdepend: [PlayerPoints, ItemsAdder]
+
 commands:
   invite:
-    description: 邀请系统相关命令
-    usage: /invite [create|submit|claim|info|list|reload]
+    description: 邀请系统主命令
+    usage: /<command> [subcommand] [args]
+    aliases: [inv]
+    permission: invite.use
+    permission-message: §c你没有权限使用此命令!
+    tab-complete: 1
+
 permissions:
+  invite.use:
+    description: 使用邀请系统命令的权限
+    default: true
   invite.create:
-    description: 允许创建邀请码
+    description: 创建邀请码的权限
     default: op
   invite.admin:
-    description: 管理邀请系统
+    description: 管理邀请系统的权限
     default: op

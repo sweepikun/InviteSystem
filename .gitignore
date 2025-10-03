@@ -4,3 +4,5 @@
 /hs_err_pid5076.mdmp
 /prompt
 /replay_pid5076.log
+*.log
+*.mdmp
