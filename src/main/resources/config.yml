@@ -1,0 +1,93 @@
+# ================================
+#        邀请系统配置文件
+# ================================
+
+# 数据库设置
+database:
+  # 类型: sqlite 或 mysql
+  type: sqlite
+
+  # MySQL 配置（仅当 type: mysql 时生效）
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "minecraft"
+    username: "root"
+    password: "your_password"
+    useSSL: false
+    pool-size: 10
+
+# 邀请规则
+invite:
+  # 新玩家必须达到的最小累计在线时间才能提交邀请码
+  # 支持格式: 30s, 5m, 2h, 1d（秒/分/时/天）
+  min-play-time: "10m"
+
+  # 邀请码默认长度（仅用于随机生成）
+  code-length: 8
+
+  # 邀请码是否区分大小写（建议 true）
+  case-sensitive: true
+
+  # 邀请码有效期（留空表示永久有效）
+  # 格式: 7d, 24h, 30m
+  code-expire-after: "7d"
+
+  # 每个邀请码最多可被使用次数（1 = 一次性）
+  max-uses-per-code: 1
+
+  # 是否仅允许从未使用过邀请码的玩家提交（防止老玩家刷奖励）
+  only-allow-first-time-users: true
+
+  # 同一 IP 地址在 24 小时内最多允许多少个被邀请人（防小号）
+  # 设为 -1 表示禁用
+  max-invitees-per-ip: 3
+  ip-cooldown-hours: 24
+
+# 奖励配置
+rewards:
+  # 邀请人（创建邀请码并被成功使用的人）获得的奖励
+  inviter:
+    - type: "ITEM"
+      material: "diamond"
+      amount: 5
+      name: "&b&l邀请奖励"
+      lore:
+        - "&7感谢你为服务器带来新朋友！"
+    - type: "VAULT"
+      amount: 500
+    - type: "PLAYERPOINTS"
+      amount: 100
+    - type: "ITEMSADDER"
+      id: "customitems:invite_token"
+      amount: 2
+
+  # 被邀请人（新玩家）获得的奖励
+  invitee:
+    - type: "ITEM"
+      material: "bread"
+      amount: 64
+    - type: "ITEM"
+      material: "iron_ingot"
+      amount: 16
+    - type: "VAULT"
+      amount: 200
+    - type: "PLAYERPOINTS"
+      amount: 50
+    - type: "ITEMSADDER"
+      id: "customitems:welcome_kit"
+      amount: 1
+
+# 权限与命令
+permissions:
+  # 是否仅限 OP 或拥有 invite.create 权限的玩家创建邀请码？
+  # true = 仅限权限玩家；false = 所有玩家可创建
+  restrict-code-creation: true
+
+# 杂项
+misc:
+  # 插件是否在后台自动清理过期邀请码？（每天凌晨执行）
+  auto-cleanup-expired-codes: true
+
+  # 日志级别: INFO / DEBUG / NONE
+  log-level: "INFO"
