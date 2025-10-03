@@ -2,8 +2,10 @@ package cn.popcraft.invitesystem.manager;
 
 import cn.popcraft.invitesystem.InviteSystem;
 import cn.popcraft.invitesystem.data.Invitation;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -80,17 +82,72 @@ public class InfoManager {
         });
     }
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     /**
      * 获取所有邀请记录（管理员命令）
      * @param player 管理员玩家
-     * @param page 页码
+     * @param page 页码（从1开始）
      */
     public CompletableFuture<Void> getAllInviteRecords(Player player, int page) {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            player.sendMessage("§e======= §6所有邀请记录 (第" + page + "页) §e=======");
-            player.sendMessage("§c注意: 此功能需要进一步完善分页查询逻辑。");
-            player.sendMessage("§e================================");
+        return CompletableFuture.runAsync(() -> {
+            try {
+                int pageSize = 10; // 每页显示10条记录
+                int offset = (page - 1) * pageSize;
+
+                // 获取总记录数
+                CompletableFuture<Integer> countFuture = plugin.getDatabaseManager().getInvitationDAO()
+                        .getTotalCount();
+
+                // 获取当前页的记录
+                CompletableFuture<List<Invitation>> invitationsFuture = plugin.getDatabaseManager().getInvitationDAO()
+                        .getAllWithPagination(offset, pageSize);
+
+                // 等待两个异步操作完成
+                CompletableFuture.allOf(countFuture, invitationsFuture).join();
+
+                int totalCount = countFuture.get();
+                List<Invitation> invitations = invitationsFuture.get();
+
+                int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+
+                // 在主线程中发送消息给玩家
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    player.sendMessage("§e======= §6所有邀请记录 (第" + page + "页/共" + totalPages + "页) §e=======");
+                    player.sendMessage("§e总记录数: §f" + totalCount);
+
+                    if (invitations.isEmpty()) {
+                        player.sendMessage("§c当前页没有邀请记录。");
+                    } else {
+                        for (int i = 0; i < invitations.size(); i++) {
+                            Invitation invitation = invitations.get(i);
+                            OfflinePlayer inviter = plugin.getServer().getOfflinePlayer(invitation.getInviterUuid());
+                            OfflinePlayer invitee = plugin.getServer().getOfflinePlayer(invitation.getInviteeUuid());
+
+                            String inviterName = inviter.getName() != null ? inviter.getName() : invitation.getInviterUuid().toString();
+                            String inviteeName = invitee.getName() != null ? invitee.getName() : invitation.getInviteeUuid().toString();
+
+                            player.sendMessage("§e" + (i + 1) + ". §f邀请人: §a" + inviterName +
+                                    " §f被邀请人: §b" + inviteeName +
+                                    " §f邀请码: §d" + invitation.getCode() +
+                                    " §f时间: §7" + invitation.getCreatedAt().format(FORMATTER));
+                        }
+                    }
+
+                    player.sendMessage("§e================================");
+                    if (page < totalPages) {
+                        player.sendMessage("§e使用 §6/invite list " + (page + 1) + " §e查看下一页");
+                    } else if (page > 1) {
+                        player.sendMessage("§e使用 §6/invite list " + (Math.max(1, page - 1)) + " §e查看上一页");
+                    }
+                });
+            } catch (Exception e) {
+                logger.severe("Error getting all invite records: " + e.getMessage());
+                e.printStackTrace();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    player.sendMessage("§c获取邀请记录时发生错误，请联系管理员。");
+                });
+            }
         });
-        return CompletableFuture.completedFuture(null);
     }
 }

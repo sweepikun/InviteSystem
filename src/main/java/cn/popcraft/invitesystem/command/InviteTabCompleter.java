@@ -47,17 +47,16 @@ public class InviteTabCompleter implements TabCompleter {
                 case "create":
                     // create命令可以提供一个示例邀请码
                     if (sender instanceof Player) {
-                        commands.add("EXAMPLE_CODE");
+                        commands.add("<邀请码>");
                         StringUtil.copyPartialMatches(args[1], commands, completions);
                     }
                     break;
                     
                 case "submit":
                     // submit命令可以提供一个示例邀请码
-                    commands.add("YOUR_INVITE_CODE");
+                    commands.add("<邀请码>");
                     StringUtil.copyPartialMatches(args[1], commands, completions);
                     break;
-                    
                 case "list":
                     // list命令可以补全页码
                     if (sender.hasPermission("invite.admin") || !(sender instanceof Player)) {

@@ -23,6 +23,11 @@ invite:
   # 支持格式: 30s, 5m, 2h, 1d（秒/分/时/天）
   min-play-time: "10m"
 
+  # 玩家最大累计在线时间，超过此时间将无法提交邀请码（防止老玩家刷奖励）
+  # 设为 -1 表示无限制
+  # 支持格式: 30s, 5m, 2h, 1d（秒/分/时/天）
+  max-play-time: "1d"
+
   # 邀请码默认长度（仅用于随机生成）
   code-length: 8
 
@@ -58,7 +63,7 @@ rewards:
       amount: 500
     - type: "PLAYERPOINTS"
       amount: 100
-    - type: "ITEMSADDER"
+    - type: "ITEMSADDER" # 需要安装 ItemsAdder 插件，没有会跳过。
       id: "customitems:invite_token"
       amount: 2
 

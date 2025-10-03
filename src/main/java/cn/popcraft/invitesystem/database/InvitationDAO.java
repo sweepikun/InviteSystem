@@ -88,6 +88,43 @@ public class InvitationDAO {
             }
         }, dbManager.getAsyncExecutor());
     }
+    
+    // 获取总记录数
+    public CompletableFuture<Integer> getTotalCount() {
+        return CompletableFuture.supplyAsync(() -> {
+            String sql = "SELECT COUNT(*) AS total FROM " + tablePrefix + "invitations";
+            try (Connection conn = dbManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            } catch (SQLException e) {
+                dbManager.handleSqlException(e);
+            }
+            return 0;
+        }, dbManager.getAsyncExecutor());
+    }
+    
+    // 分页获取所有邀请记录
+    public CompletableFuture<List<Invitation>> getAllWithPagination(int offset, int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            String sql = "SELECT * FROM " + tablePrefix + "invitations ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            List<Invitation> list = new ArrayList<>();
+            try (Connection conn = dbManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, limit);
+                stmt.setInt(2, offset);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    list.add(mapResultSetToInvitation(rs));
+                }
+            } catch (SQLException e) {
+                dbManager.handleSqlException(e);
+            }
+            return list;
+        }, dbManager.getAsyncExecutor());
+    }
 
     private Invitation mapResultSetToInvitation(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
