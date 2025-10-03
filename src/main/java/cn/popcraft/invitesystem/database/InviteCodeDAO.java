@@ -24,14 +24,14 @@ public class InviteCodeDAO {
     // 创建邀请码
     public CompletableFuture<Boolean> createInviteCode(InviteCode code) {
         return CompletableFuture.supplyAsync(() -> {
-            String sql = "INSERT INTO " + tablePrefix + "invite_codes (code, creator_uuid, expires_at, max_uses, used_count) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO " + tablePrefix + "invite_codes " +
+                    "(code, creator_uuid, expires_at, max_uses, used_count) VALUES (?, ?, ?, ?, 0)";
             try (Connection conn = dbManager.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, code.getCode());
                 stmt.setString(2, code.getCreatorUuid().toString());
-                stmt.setTimestamp(3, code.getExpiresAt() == null ? null : Timestamp.valueOf(code.getExpiresAt()));
+                stmt.setTimestamp(3, code.getExpiresAt() != null ? Timestamp.valueOf(code.getExpiresAt()) : null);
                 stmt.setInt(4, code.getMaxUses());
-                stmt.setInt(5, code.getUsedCount());
                 return stmt.executeUpdate() > 0;
             } catch (SQLException e) {
                 dbManager.handleSqlException(e);

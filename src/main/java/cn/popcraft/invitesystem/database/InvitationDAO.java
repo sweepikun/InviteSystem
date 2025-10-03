@@ -47,12 +47,12 @@ public class InvitationDAO {
 
     // 获取某玩家作为被邀请人、未领取的记录
     public CompletableFuture<List<Invitation>> getUnclaimedAsInvitee(UUID playerUuid) {
-        return queryInvitations("invitee_uuid = ? AND claimed_invitee = 0", playerUuid.toString());
+        return queryInvitations("invitee_uuid = ? AND claimed_invitee = FALSE", playerUuid.toString());
     }
 
     // 获取某玩家作为邀请人、未领取的记录
     public CompletableFuture<List<Invitation>> getUnclaimedAsInviter(UUID playerUuid) {
-        return queryInvitations("inviter_uuid = ? AND claimed_inviter = 0", playerUuid.toString());
+        return queryInvitations("inviter_uuid = ? AND claimed_inviter = FALSE", playerUuid.toString());
     }
 
     private CompletableFuture<List<Invitation>> queryInvitations(String whereClause, String uuidStr) {
@@ -77,7 +77,7 @@ public class InvitationDAO {
     public CompletableFuture<Boolean> markClaimed(int invitationId, boolean isInviter) {
         return CompletableFuture.supplyAsync(() -> {
             String column = isInviter ? "claimed_inviter" : "claimed_invitee";
-            String sql = "UPDATE " + tablePrefix + "invitations SET " + column + " = 1 WHERE id = ?";
+            String sql = "UPDATE " + tablePrefix + "invitations SET " + column + " = TRUE WHERE id = ?";
             try (Connection conn = dbManager.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, invitationId);

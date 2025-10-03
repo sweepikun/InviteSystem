@@ -1,6 +1,7 @@
 package cn.popcraft.invitesystem.database;
 
 import cn.popcraft.invitesystem.InviteSystem;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
  * 玩家首次加入数据访问对象
  */
 public class PlayerFirstJoinDAO {
+
     private final DatabaseManager dbManager;
     private final String tablePrefix;
 
@@ -52,32 +54,6 @@ public class PlayerFirstJoinDAO {
                 return false;
             }
         }, dbManager.getAsyncExecutor());
-    }
-    
-    private boolean insertIfNotExists(UUID uuid) {
-        try (Connection conn = dbManager.getConnection()) {
-            // 先检查是否存在
-            String selectSql = "SELECT uuid FROM " + tablePrefix + "player_first_join WHERE uuid = ?";
-            try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
-                selectStmt.setString(1, uuid.toString());
-                ResultSet rs = selectStmt.executeQuery();
-                if (rs.next()) {
-                    // 已存在
-                    return true;
-                }
-            }
-            
-            // 不存在则插入
-            String insertSql = "INSERT INTO " + tablePrefix + "player_first_join (uuid) VALUES (?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                insertStmt.setString(1, uuid.toString());
-                insertStmt.executeUpdate();
-                return true;
-            }
-        } catch (SQLException e) {
-            dbManager.handleSqlException(e);
-            return false;
-        }
     }
 
     public CompletableFuture<LocalDateTime> getFirstJoinTime(UUID uuid) {

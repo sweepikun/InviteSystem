@@ -102,6 +102,11 @@ public class DatabaseManager {
     }
 
     public void createTables() {
+        // 确保数据文件夹存在
+        if (!plugin.getDataFolder().exists()) {
+            plugin.getDataFolder().mkdirs();
+        }
+        
         // 根据数据库类型选择合适的自增主键语法
         String autoIncrementSyntax = "mysql".equalsIgnoreCase(databaseType) ? 
             "INTEGER PRIMARY KEY AUTO_INCREMENT" : 
@@ -135,12 +140,17 @@ public class DatabaseManager {
                 "first_join TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ");";
 
-        executeUpdate(sqlInviteCodes);
-        executeUpdate(sqlInvitations);
-        executeUpdate(sqlFirstJoin);
-        
-        // 创建索引
-        createIndexes();
+        // 同步执行表创建，确保表存在后再进行其他操作
+        try {
+            executeUpdateSync(sqlInviteCodes);
+            executeUpdateSync(sqlInvitations);
+            executeUpdateSync(sqlFirstJoin);
+            
+            // 创建索引
+            createIndexes();
+        } catch (SQLException e) {
+            logger.severe("Failed to create tables: " + e.getMessage());
+        }
     }
     
     private void createIndexes() {
@@ -151,11 +161,22 @@ public class DatabaseManager {
         String idxExpires = "CREATE INDEX IF NOT EXISTS idx_invite_codes_expires ON " 
                 + tablePrefix + "invite_codes(expires_at)";
                 
-        executeUpdate(idxInvitee);
-        executeUpdate(idxInviter);
-        executeUpdate(idxExpires);
+        try {
+            executeUpdateSync(idxInvitee);
+            executeUpdateSync(idxInviter);
+            executeUpdateSync(idxExpires);
+        } catch (SQLException e) {
+            logger.severe("Failed to create indexes: " + e.getMessage());
+        }
     }
 
+    private void executeUpdateSync(String sql) throws SQLException {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        }
+    }
+    
     private void executeUpdate(String sql) {
         asyncExecutor.execute(() -> {
             try (Connection conn = getConnection();
