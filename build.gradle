@@ -35,9 +35,9 @@ dependencies {
     compileOnly 'org.black_ixx:playerpoints:3.2.5'
     compileOnly 'com.github.LoneDev6:API-ItemsAdder:3.6.1'
     
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
     implementation 'mysql:mysql-connector-java:8.0.33'
-    implementation 'com.zaxxer:HikariCP:4.0.3'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
     
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:3.12.4'
